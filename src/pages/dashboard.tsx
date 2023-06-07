@@ -14,7 +14,7 @@ export default function KpiCardGrid() {
   return (
     <main className="bg-slate-50 p-6 sm:p-10">
       <Title>Dashboard</Title>
-      <Text>Lorem ipsum dolor sit amet, consetetur sadipscing elitr.</Text>
+      <Text>IBM Analytics Software</Text>
 
       <TabList
         defaultValue="1"

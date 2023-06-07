@@ -1,5 +1,6 @@
 import { Card, Title, AreaChart } from "@tremor/react";
-
+import * as React from "react"
+import TextField from '@mui/material/TextField';
 const chartdata = [
   {
     date: "Jan 22",
@@ -37,9 +38,35 @@ const dataFormatter = (number: number) => {
   return "$ " + Intl.NumberFormat("us").format(number).toString();
 };
 
- const Chart = ()=>(
+ const Chart = ()=>{
+  const [variable, setVariable] = React.useState("org")
+  const variables = ["org", "certification"]
+ 
+ return (
   <Card>
-    <Title>Newsletter revenue over time (USD)</Title>
+    <div style= {{display:"flex"}}>
+    <Title style ={{width:"20%"}}> Distribution of {variable} over time</Title>
+    <TextField
+          id="outlined-select-currency-native"
+          select
+          label="Mode"
+          defaultValue="Query"
+          SelectProps={{
+            native: true,
+          }}
+          
+          sx = {{width:"40%", marginLeft: "40%"}}
+          onChange={(evt)=>{
+            setVariable(evt.target.value)
+          }}
+        >
+          {variables.map((option, key) => (
+            <option key={key} value={option}>
+              {option}
+            </option>
+          ))}
+        </TextField>
+        </div>
     <AreaChart
       className="h-72 mt-4"
       data={chartdata}
@@ -49,5 +76,5 @@ const dataFormatter = (number: number) => {
       valueFormatter={dataFormatter}
     />
   </Card>
-);
+)};
 export default Chart

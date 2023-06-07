@@ -1,5 +1,6 @@
 import { BarList, Card, Title, Bold, Flex, Text } from "@tremor/react";
-
+import TextField from '@mui/material/TextField';
+import * as React from "react"
 const data = [
     {
         name: 'Twitter',
@@ -69,9 +70,34 @@ const data = [
     },
 ];
 
-const Histogram = () => (
+const Histogram = () => {
+    const [variable, setVariable] = React.useState("org")
+    const variables = ["org", "certification"]
+return (
   <Card className="h-full">
-    <Title>Website Analytics</Title>
+    <div style= {{display:"flex"}}>
+    <Title style ={{width:"20%"}}>Distribution of {variable}</Title>
+    <TextField
+          id="outlined-select-currency-native"
+          select
+          label="Mode"
+          defaultValue="Query"
+          SelectProps={{
+            native: true,
+          }}
+          
+          sx = {{width:"40%", marginLeft: "40%"}}
+          onChange={(evt)=>{
+            setVariable(evt.target.value)
+          }}
+        >
+          {variables.map((option, key) => (
+            <option key={key} value={option}>
+              {option}
+            </option>
+          ))}
+        </TextField>
+        </div>
     <Flex className="mt-4">
       <Text>
         <Bold>Source</Bold>
@@ -82,5 +108,5 @@ const Histogram = () => (
     </Flex>
     <BarList data={data} className="mt-2" />
   </Card>
-);
+)};
 export default Histogram;

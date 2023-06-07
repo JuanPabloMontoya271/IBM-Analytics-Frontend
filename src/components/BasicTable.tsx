@@ -1,4 +1,5 @@
 import * as React from 'react';
+import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -7,81 +8,38 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
+import TextField from '@mui/material/TextField';
 
-interface Column {
-  id: 'name' | 'code' | 'population' | 'size' | 'density';
-  label: string;
-  minWidth?: number;
-  align?: 'right';
-  format?: (value: number) => string;
-}
-
-const columns: readonly Column[] = [
-  { id: 'name', label: 'Name', minWidth: 170 },
-  { id: 'code', label: 'ISO\u00a0Code', minWidth: 100 },
-  {
-    id: 'population',
-    label: 'Population',
-    minWidth: 170,
-    align: 'right',
-    format: (value: number) => value.toLocaleString('en-US'),
-  },
-  {
-    id: 'size',
-    label: 'Size\u00a0(km\u00b2)',
-    minWidth: 170,
-    align: 'right',
-    format: (value: number) => value.toLocaleString('en-US'),
-  },
-  {
-    id: 'density',
-    label: 'Density',
-    minWidth: 170,
-    align: 'right',
-    format: (value: number) => value.toFixed(2),
-  },
-];
-
-interface Data {
-  name: string;
-  code: string;
-  population: number;
-  size: number;
-  density: number;
-}
-
-function createData(
-  name: string,
-  code: string,
-  population: number,
-  size: number,
-): Data {
-  const density = population / size;
-  return { name, code, population, size, density };
-}
-
-const rows = [
-  createData('India', 'IN', 1324171354, 3287263),
-  createData('China', 'CN', 1403500365, 9596961),
-  createData('Italy', 'IT', 60483973, 301340),
-  createData('United States', 'US', 327167434, 9833520),
-  createData('Canada', 'CA', 37602103, 9984670),
-  createData('Australia', 'AU', 25475400, 7692024),
-  createData('Germany', 'DE', 83019200, 357578),
-  createData('Ireland', 'IE', 4857000, 70273),
-  createData('Mexico', 'MX', 126577691, 1972550),
-  createData('Japan', 'JP', 126317000, 377973),
-  createData('France', 'FR', 67022000, 640679),
-  createData('United Kingdom', 'GB', 67545757, 242495),
-  createData('Russia', 'RU', 146793744, 17098246),
-  createData('Nigeria', 'NG', 200962417, 923768),
-  createData('Brazil', 'BR', 210147125, 8515767),
-];
 
 export default function BasicTable() {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [columns_, setColumns_] = React.useState([]);
+  const [rows_, setRows_] = React.useState([{}]);
+  const [query, setQuery] = React.useState("")
+  const [mode, setMode] = React.useState("")
+  const modes = ["Query", "Q/A"]
+  
 
+  const executeQuery = ()=>{
+    console.log(query)
+    const body = JSON.stringify({prompt:query})
+    const headers = {
+      'Content-Type': 'application/json', // Replace with the appropriate content type
+    }
+    fetch("/api/query", {method: "POST", headers: headers, body: body, } )
+    .then((data) => data.json())
+    .then((data) => {
+      console.log(data)
+      const query = data.query
+      const columns = data.columns;
+      const rows = data.rows;
+      console.log(columns, rows );
+      setColumns_(columns);
+
+      setRows_(rows);
+    })
+  }
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -90,37 +48,106 @@ export default function BasicTable() {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
+  React.useEffect(() => {
+    const body = JSON.stringify({prompt: ""})
+    const headers = {
+      'Content-Type': 'application/json', // Replace with the appropriate content type
+    }
+    fetch("/api/query", {method: "POST", headers: headers , body: body} )
+      .then((data) => data.json())
+      .then((data) => {
+        console.log(data)
+        const query = data.query
+        const columns = data.columns;
+        const rows = data.rows;
+        console.log(columns, rows );
+        setColumns_(columns);
+
+        setRows_(rows);
+      })
+  }, [])
 
   return (
+    
     <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+      <div style = {{"padding": "5px", marginTop:"10px", display:"flex", height:"30%"}}>
+        <TextField
+          id="standard-multiline-static"
+          label="Query"
+          value = {query}
+          multiline
+          rows={3}
+          sx = {{width:"70%"}}
+          onChange = {(evt) =>{
+            setQuery(evt.target.value)
+          }}
+        />
+        <div style = {{width:"30%", marginLeft:"5px", height:"100%" }}>
+        <TextField
+          id="outlined-select-currency-native"
+          select
+          label="Mode"
+          defaultValue="Query"
+          SelectProps={{
+            native: true,
+          }}
+          
+          sx = {{width:"100%"}}
+          onChange={(evt)=>{
+            setMode(evt.target.value)
+          }}
+        >
+          {modes.map((option, key) => (
+            <option key={key} value={option}>
+              {option}
+            </option>
+          ))}
+        </TextField>
+        <div>
+          <div style={{marginTop:"5px", width:"100%"}}>
+        <Button variant="outlined" 
+                sx = {{width:"50%"}}
+                onClick = {(evt)=>{
+                  setQuery("")
+                }}>Clear</Button>
+        <Button variant="outlined"
+                sx = {{width:"50%"}}
+                onClick = {(evt)=>{
+                  executeQuery()
+                }} >Submit</Button>
+        </div>
+        </div>
+        
+        </div>
+        </div>
+
+       
       <TableContainer sx={{ maxHeight: 300 }}>
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
             <TableRow>
-              {columns.map((column) => (
+              {columns_.map((column, key) => (
                 <TableCell
-                  key={column.id}
-                  align={column.align}
-                  style={{ minWidth: column.minWidth }}
+                  key={key}
+                  align={"center"}
+                  style={{ minWidth: 100 }}
                 >
-                  {column.label}
+                  {column}
                 </TableCell>
               ))}
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows
+            {rows_
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((row) => {
+              .map((row, key) => {
                 return (
-                  <TableRow hover role="checkbox" tabIndex={-1} key={row.code}>
-                    {columns.map((column) => {
-                      const value = row[column.id];
+                  <TableRow hover role="checkbox" tabIndex={-1} key={key}>
+                    {columns_.map((elem, key) => {
+                      const value = row[elem];
                       return (
-                        <TableCell key={column.id} align={column.align}>
-                          {column.format && typeof value === 'number'
-                            ? column.format(value)
-                            : value}
+                        <TableCell key={key} align={"center"}>
+                          {value}
                         </TableCell>
                       );
                     })}
@@ -133,7 +160,7 @@ export default function BasicTable() {
       <TablePagination
         rowsPerPageOptions={[10, 25, 100]}
         component="div"
-        count={rows.length}
+        count={rows_.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
